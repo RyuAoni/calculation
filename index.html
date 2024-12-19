@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ID合計計算</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>名前のID合計を計算</h1>
+
+  <!-- グループ選択 -->
+  <label for="group">グループ選択:</label>
+  <select id="group" onchange="loadExcelData()">
+    <option value="868">868</option>
+    <option value="SGPD">警察</option>
+  </select>
+
+  <br><br>
+
+  <!-- 名前入力フィールドのコンテナ -->
+  <div id="nameFields">
+    <label for="name1">名前:</label>
+    <input type="text" class="name" id="name1" placeholder="名前を入力">
+  </div>
+
+  <br><br>
+
+  <!-- 名前を追加ボタン -->
+  <button onclick="addNameField()">名前を追加</button>
+
+  <br><br>
+
+  <button onclick="calculateSum()">ID合計を計算</button>
+
+  <p id="result"></p>
+
+  <script>
+    let excelData = [];
+
+    // Excelファイルを読み込む関数（グループ選択時に呼び出される）
+    function loadExcelData() {
+      const group = document.getElementById('group').value;
+      console.log(group);
+      const fileName = `${group}.xlsx`;  // グループに対応するファイル名
+      console.log(fileName);
+
+      // fetch APIを使ってファイルを読み込む
+      fetch(fileName)
+      //console.log("a");
+        .then(response => response.arrayBuffer())
+        //console.log("b");
+        .then(data => {
+            console.log("c");
+          const workbook = XLSX.read(data, { type: 'array' });
+          console.log("d");
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          console.log("e");
+          // データをJSON形式に変換
+          excelData = XLSX.utils.sheet_to_json(worksheet);
+          console.log("f");
+        })
+        .catch(error => {
+          console.error('Excelファイルの読み込みエラー:', error);
+          console.log(error);
+          alert('Excelファイルの読み込みに失敗しました。');
+        });
+    }
+
+    // 名前入力フィールドを追加する関数
+    function addNameField() {
+      const nameFieldsDiv = document.getElementById('nameFields');
+      const newInput = document.createElement('input');
+      const nameCount = nameFieldsDiv.getElementsByClassName('name').length + 1;
+      newInput.type = 'text';
+      newInput.classList.add('name');
+      newInput.id = 'name' + nameCount;
+      newInput.placeholder = '名前を入力 ' + nameCount;
+      nameFieldsDiv.appendChild(newInput);
+      nameFieldsDiv.appendChild(document.createElement('br'));
+    }
+
+    // ID合計を計算する関数
+    function calculateSum() {
+      const nameInputs = document.getElementsByClassName('name');
+      let sum = 0;
+
+      // すべての名前入力フィールドをループして処理
+      for (let i = 0; i < nameInputs.length; i++) {
+        const name = nameInputs[i].value.trim();
+        if (name) {
+          // Excelデータから一致する名前のIDを集計
+          excelData.forEach(row => {
+            // 名前とグループに一致する場合、そのIDを合計
+            if (row["名前"] === name) {
+              // 16進数のIDを足し算（parseIntで16進数に変換）
+              const hexID = parseInt(row["ID"], 16);
+              sum += hexID;
+            }
+          });
+        }
+      }
+
+      // 結果を16進数形式で表示
+      const resultElement = document.getElementById('result');
+      if (sum > 0) {
+        resultElement.textContent = `合計ID: 0x${sum.toString(16).toUpperCase()}`;  // 16進数形式で表示
+      } else {
+        resultElement.textContent = "該当するデータが見つかりませんでした。";
+      }
+    }
+
+    // 初期状態でExcelデータを読み込む
+    window.onload = function() {
+      loadExcelData(); // 初期ロードで適切なExcelファイルを読み込む
+    };
+  </script>
+</body>
+</html>
