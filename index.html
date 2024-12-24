@@ -230,9 +230,12 @@ DMC-12 "Stronzo"<br>
           excelData.forEach(row => {
             // 名前とグループに一致する場合、そのIDを合計
             if (row["名前"] === name) {
+              console.log(name);
               // 16進数のIDを足し算（parseIntで16進数に変換）
               const hexID = parseInt(row["ID"], 16);
+              console.log(hexID);
               sum += hexID;
+              console.log(sum);
             }
           });
         }
