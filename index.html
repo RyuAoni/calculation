@@ -234,7 +234,7 @@ DMC-12 "Stronzo"<br>
               // 16進数のIDを足し算（parseIntで16進数に変換）
               const hexID = row["ID"].replace(/^0x/, '');
               console.log(hexID);
-              sum += paeseInt(hexID, 16);
+              sum += parseInt(hexID, 16);
               console.log(sum);
             }
           });
